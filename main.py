@@ -7,7 +7,7 @@ SEARCH_WORDS = ['дизайн', 'фото', 'web', 'python', 'art']
 SEARCH_CITIES = ['Москва', 'Санкт-Петербург']
 
 # Получите HTML-код страницы с хабами
-res = requests.get('https://spb.hh.ru/?hhtmFrom=vacancy_search_list')
+res = requests.get('https://spb.hh.ru/search/vacancy?text=python&area=1&area=2')
 
 if res.status_code == 200:
     print("Запрос прошел успешно")
