@@ -73,7 +73,7 @@ def hh_parsing(headers):
 
 
         # Проверяем, если достигли нужного количества совпадений
-        if found_vacancies >= 6:
+        if found_vacancies >= 4:
             break  # Прерываем цикл, если найдено достаточно вакансий
 
     result_vacancies =[]
@@ -93,24 +93,50 @@ def hh_parsing(headers):
         vacancy_soup = BeautifulSoup(res.text, 'html.parser')
         vacancy_description = vacancy_soup.find('div', {'data-qa': 'vacancy-description'})
 
+        text_fork = ''
+        text_company = ''
+        text_city = ''
+        description_text_lower = ''  # Инициализируем переменную перед использованием
         # print (vacancy_description)
 
         if vacancy_description is not None:
             description_text = vacancy_description.get_text(separator=" ")
             description_text_lower = description_text.lower()
-            print (f"Содержание описания вакансии: {description_text}")
-        else:
-            description_text = "Description not found"
 
-        for key in SEARCH_DESCRIP:
-            if key.lower() in description_text_lower:
+            vacancy_fork = vacancy_soup.find('span', class_='bloko-header-section-2 bloko-header-section-2_lite')
+            if vacancy_fork:
+                text_fork = vacancy_fork.text
+                print(f"Вилка ЗП: {text_fork}")
+
+            vacancy_company = vacancy_soup.find('a', {'data-qa': 'vacancy-company-name'})
+            if vacancy_company:
+                text_company = vacancy_company.text
+                print(f"Название Компании: {text_company}")
+
+            vacancy_city = vacancy_soup.find('span', {'data-qa': 'vacancy-view-raw-address'})
+            if vacancy_city:
+                city_words = vacancy_city.text.split()
+                text_city = city_words[0].strip()
+                print(f"Название города: {text_city}")
+
+            is_match_found = False
+
+            for key in SEARCH_DESCRIP:
+                if key.lower() in description_text_lower:
+                    is_match_found = True
+                    break
+
+            if is_match_found:
                 result_vacancy = {
-                    'Название': name,
-                    'Ссылка': link
+                    'Вакансия': name,
+                    'Ссылка': link,
+                    'Компания': text_company,
+                    'Город': text_city,
+                    'Вилка ЗП': text_fork
                 }
-               # print(f" Вот одна из искомых вакансий {result_vacancy}")
+                print(f" Вот одна из искомых вакансий {result_vacancy}")
                 result_vacancies.append(result_vacancy)
-                final_vacations_count+=1
+                final_vacations_count += 1
 
     return   result_vacancies, final_vacations_count
 
