@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 
 
-def hh_parsing(headers):
+def hh_parsing(headers, search_quantity_of_vac):
 
     HOST = 'https://spb.hh.ru/search/vacancy?text=python&area=1&area=2'
 
@@ -73,7 +73,7 @@ def hh_parsing(headers):
 
 
         # Проверяем, если достигли нужного количества совпадений
-        if found_vacancies >= 4:
+        if found_vacancies >= search_quantity_of_vac:
             break  # Прерываем цикл, если найдено достаточно вакансий
 
     result_vacancies =[]
@@ -113,20 +113,20 @@ def hh_parsing(headers):
                 text_company = vacancy_company.text
                 print(f"Название Компании: {text_company}")
 
-            vacancy_city = vacancy_soup.find('span', {'data-qa': 'vacancy-view-raw-address'})
+            vacancy_city = vacancy_soup.find('p', {'data-qa': 'vacancy-view-location'})
             if vacancy_city:
                 city_words = vacancy_city.text.split()
                 text_city = city_words[0].strip()
                 print(f"Название города: {text_city}")
 
-            is_match_found = False
+            #is_match_found = False
 
             for key in SEARCH_DESCRIP:
                 if key.lower() in description_text_lower:
                     is_match_found = True
                     break
 
-            if is_match_found:
+            #if is_match_found:
                 result_vacancy = {
                     'Вакансия': name,
                     'Ссылка': link,
@@ -144,6 +144,8 @@ def hh_parsing(headers):
 
 if __name__ == "__main__":
 
+    search_quantity_of_vac = 9
+
     # Пасинг нужен поиском по "Python" и городами "Москва" и "Санкт-Петербург". ссылка вот: https://spb.hh.ru/search/vacancy?text=python&area=1&area=2
     SEARCH_WORDS = ['дизайн', 'фото', 'web', 'python', 'art']
     SEARCH_CITIES = ['Москва', 'Санкт-Петербург']
@@ -152,11 +154,24 @@ if __name__ == "__main__":
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36', }
 
-    result = hh_parsing(headers)
+    result = hh_parsing(headers, search_quantity_of_vac)
 
-    print("----")
-    print(f"-----------Результирующий список вакансий в количестве : {result[1]}")
-    for element in result[0]:
-        print(element)
+    #
+    # print("----")
+    # print(f"-----------Результирующий список вакансий в количестве : {result[1]}")
+    # for element in result[0]:
+    #     print(element)
 
+    # Создаем пустое множество, в которое будем добавлять кортежи (ключ, значение)
+    result_vacancies_set = set()
 
+    # Проходим по каждому словарю в списке и добавляем в множество кортежи (ключ, значение)
+    for dictionary in result[0]:
+        # Получаем элементы словаря в виде кортежей (ключ, значение) и добавляем их в множество
+        items = tuple(dictionary.items())
+        result_vacancies_set.add(items)
+    final_quantity_of_vac = len(result_vacancies_set)
+    # Выводим полученное множество
+    print(f"--------Итого количество уникальных вакансий = {final_quantity_of_vac}")
+    for el in result_vacancies_set:
+        print(el)
